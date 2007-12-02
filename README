@@ -1,0 +1,78 @@
+Music-MPDScrobble version 0.1
+============================
+
+Simple Module to provide a scrobbling service for MPD.  
+
+DISCLAIMER
+
+This is BETA code for testing ONLY.  The included program musicmpdscrobble is an 
+example implementation only of Music::MPDScrobble.  A formal release requires an 
+ID from last.fm.  While testing your application, you may use the "tst" ID.
+
+INSTALLATION
+
+See the DEPENDENCIES section and install any missing dependencies.  All modules
+are available from CPAN (www.cpan.org).
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+CONFIGURATION
+
+There is a sample config file under examples.  A sample init file that I use for 
+gentoo linux is there as well. 
+
+USE
+
+Edit the sample config file and copy to /etc/musicmpdscrobble.conf
+
+Test your configuration by issue the command
+
+musicmpdscrobble --logfile=STDERR --monitor
+
+and playing some music.  
+
+If it works, then the command
+
+musicmpdscrobble --daemonize 
+
+runs it as a daemon.
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+File::Spec
+Digest::MD5
+Encode
+IO::Socket
+IO::File
+Config::Options
+LWP::UserAgent
+Tie::File
+
+I strongly encourage you to also install my module
+
+Music::Tag
+
+This will allow you to read info from the file tag.
+
+The version info in the Makefile is based on what I use.  You can get 
+away with older versions in many cases.
+
+HELP
+
+Is available with perldoc musicmpdscrobble
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2007 Edward J. Allen III
+ealleniii _at_ cpan _dot_ org
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.7 or,
+at your option, any later version of Perl 5 you may have available.
+

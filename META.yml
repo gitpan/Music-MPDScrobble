@@ -1,0 +1,22 @@
+--- #YAML:1.0
+name:                Music-MPDScrobble
+version:             0.01
+abstract:            MPD Audioscrobbler Routines
+license:             ~
+generated_by:        ExtUtils::MakeMaker version 6.36
+distribution_type:   module
+requires:     
+    Config::Options:               0.01
+    Digest::MD5:                   2
+    Encode:                        2
+    File::Spec:                    3
+    IO::File:                      1
+    IO::Socket:                    1
+    LWP::UserAgent:                2
+    Proc::Daemon:                  0.03
+    Tie::Hash:                     1
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - Edward Allen (edwardallenthethird@hotmail.com)

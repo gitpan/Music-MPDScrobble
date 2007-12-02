@@ -1,0 +1,8 @@
+bin/musicmpdscrobble
+lib/Music/MPDScrobble.pm
+Makefile.PL
+examples/musicmpdscrobble_example.conf
+examples/gentoo_init_script
+README
+MANIFEST
+META.yml                                 Module meta-data (added by MakeMaker)

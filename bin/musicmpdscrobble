@@ -1,0 +1,239 @@
+#!/usr/bin/perl
+use strict;
+use Music::MPDScrobble;
+use Getopt::Long;
+use Proc::Daemon;
+use Pod::Usage;
+our %cloptions = ( pidfile => "/var/run/musicmpdscrobble.pid", );
+our $clopts = [
+                [  "daemonize" => \$cloptions{daemonize},
+                   "Run as a daemon"
+                ],
+                [  "kill" => \&kill,
+                   "Kill a running daemon"
+                ],
+                [  "pidfile=s" => \$cloptions{pidfile},
+                   "Specify a pid file for daemon mode"
+                ],
+                [  "logfile=s" => \$cloptions{logfile},
+                   "Specify a log file.  Set to STDERR for terminal output"
+                ],
+                [  "monitor" => \$cloptions{monitor},
+                   "print program status while running"
+                ],
+                [  "verbose=i" => \$cloptions{verbose},
+                   "Set program verbosity level"
+                ],
+                [  "config=s" => \$cloptions{optionfile},
+                   "Set config file location"
+                ],
+                [  "help" => \&help,
+                   "Your lookin' at it."
+                ],
+                [  "longhelp" => \&longhelp,
+                   "Help file with more BS."
+                ],
+              ];
+
+Getopt::Long::GetOptions( map { $_->[0] => $_->[1] } @{$clopts} );
+
+# Need to ignore udefind options.
+our %options = ();
+while ( my ( $k, $v ) = each %cloptions ) {
+    if ( defined $v ) {
+        $options{$k} = $v;
+    }
+}
+
+if ( $options{logfile} eq "STDERR" ) {
+    $options{logfile} = undef;
+}
+
+if ( $options{"daemonize"} ) {
+    print STDERR "Running as a daemon...\n";
+    Proc::Daemon::Init;
+    local *PIDFILE;
+    if ( open( PIDFILE, ">", $options{pidfile} ) ) {
+        print PIDFILE $$;
+        close PIDFILE;
+    }
+}
+
+my $mpds = Music::MPDScrobble->new( \%options );
+
+$mpds->monitor_mpd();
+exit;
+
+sub help {
+    foreach ( @{$clopts} ) {
+        printf "--%-15s  %s\n", $_->[0], $_->[2];
+    }
+    exit 1;
+}
+
+sub longhelp {
+    pod2usage( -verbose => 2 );
+}
+
+sub kill {
+    local *PIDFILE;
+    open( PIDFILE, "<", $options{pidfile} ) or die "Couldn't open pid file: $!";
+    my $pid = <PIDFILE>;
+    close(PIDFILE);
+    if ($pid) {
+        if ( kill 2, $pid ) {
+            unlink $options{pidfile};
+            exit;
+        }
+    }
+    print STDERR "Failed to kill anything\n";
+    exit 1;
+}
+
+__END__
+
+=head1 musicmpdscrobble
+
+musicmpdscrobble - Example perl script to submit tracks to Last.FM
+
+=head1 SYNOPSIS
+
+musicmpdscrobble --monitor --logfile=STDERR
+
+This runs musicmpdscrobble in the foreground and prints a monitor summery.
+
+=head1 OPTIONS
+
+=over 4
+
+=item --daemonize
+
+Run as a daemon.  You should set the logfile option if you use this!  
+
+=item --kill
+
+Kill running process if daemonized.  Not working well at moment...
+
+=item --pidfile
+
+Specify a pid file for daemon mode
+
+=item --logfile="/path/to/log/file"
+
+Specify a log file.  Set to STDERR for terminal output.
+
+=item --monitor
+
+Print program status while running.  Don't use in daemon mode!
+
+=item --verbose=n
+
+Set verbosity level of the log (0 through 4)
+
+=item --config
+
+Set path to config file (default /etc/musicmpdscrobble.conf)
+
+=item --help
+
+Print summery of command options and quit.
+
+=longhelp
+
+Print this.
+
+=back 4
+
+=head1  CONFIGURATION FILE
+
+The configuration file is a perl program.  It is evaluated after the script runs, so it is a good idea to run perl -c /etc/musicmpdscrobble.conf 
+after editing it.  Here is an example config file:
+
+	#!/usr/bin/perl 
+	# Example musicmpdscrobble.conf file
+	#
+	# This is a perl file.  It must be a hash reference.  This means a comma between 
+	# key / value pairs.
+	#
+	# To check syntax run perl -c musicmpdscrobble.conf
+	#
+
+	{ 
+	# LastFM Username and Password
+		lastfm_username   => "riemann42", 
+		lastfm_password   => "secret", 
+
+	# Specify last.fm client information.  Change this to code provided by last.fm
+	# if you are releasing an application that is not a demo or test.
+	# 
+	#   lastfm_client_id => "tst",
+	#   lastfm_client_version => "1.0",
+
+	# Specify mpd_server info.  Default is MPD_HOST or localhost
+	#       mpd_server => 'localhost',
+
+	# Specify mpd_port.  Default is MPD_PORT or 6600
+	#       mpd_port	=> 6600,
+
+	# If you have installed the Music::Tag module, set to 1.
+		musictag	  => 0,
+
+	# Specify the music_directory path for MPD. 
+		music_directory		  => "/mnt/media/music/MP3s",
+
+	# Set the verbosity level.  1 through 4.  3 is a good medium 
+		verbose           => 3, 
+
+	#Specify the logfile path
+		logfile		  => "/var/log/musicmpdscrobble.log",
+
+	#Specify the file to write the pid to.
+		pidfile => "/var/run/musicmpdscrobble.pid",
+
+	#Specify the file to store pending scrobbles in.
+		scrobble_queue	  =>  "/var/lib/musicmpdscrobble.queue",
+
+	# list of programs to run when a song start.  Accepts the following variables:
+	#
+	#   %f  filename
+	#   %a  Artist
+	#   %b  Album
+	#   %t  Title
+	#   %l  Length of track in seconds
+	#   %n  Track number
+	#   %m  mbid of track
+	#
+	#   runonstart => [],
+
+	# list of programs to run after song submit.
+	#	   runonsubmit => [],
+	}; 
+
+=head1 About Music::Tag Module
+
+The music tag module is framework for reading tag files.  It requires several modules be installed to work correctly.
+
+The major reason to install this is that it will read info from the filename and not just from the MPD database.  You can,
+therefore, submit the MusicBrainz ID, if it is available via Music::Tag.  You want to submit the MusicBrainz Track ID because
+at the momement it makes you immune from last.fm spam protection and helps improve the last.fm database.
+
+=head1 DISCLAIMER
+
+This is BETA code for testing ONLY.  The included program musicmpdscrobble is an 
+example implementation only of Music::MPDScrobble.  A formal release requires an 
+ID from last.fm.  While testing your application, you may use the .tst ID.
+
+=head1 SEE ALSO
+
+L<Music::MPDScrobble>, L<Music::Tag>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2007 Edward J. Allen III
+Some code and inspiration from L<Audio::MPD> Copyright (c) 2005 Tue Abrahamsen, Copyright (c) 2006 Nicholas J. Humfrey, Copyright (c) 2007 Jerome Quelin
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.7 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut
