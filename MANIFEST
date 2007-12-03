@@ -5,4 +5,5 @@ examples/musicmpdscrobble_example.conf
 examples/gentoo_init_script
 README
 MANIFEST
+Changes
 META.yml                                 Module meta-data (added by MakeMaker)

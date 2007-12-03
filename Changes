@@ -1,0 +1,10 @@
+Release Name: 0.02
+=======================
+ * Fixed bug caused my Music::Tag returning non-integer values for "secs"
+ * Along same lines, configure to not use Music::Tag secs values, but trust MPD
+
+Release Name: 0.01
+=======================
+ * Initial Release
+ * Basic routines for scrobbling MPD.  Code from Music::Audioscrobbler merged for now.
+

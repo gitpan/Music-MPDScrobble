@@ -1,5 +1,5 @@
 package Music::MPDScrobble;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 # Copyright (c) 2007 Edward J. Allen III
 # Some code and inspiration from Audio::MPD Copyright (c) 2005 Tue Abrahamsen, Copyright (c) 2006 Nicholas J. Humfrey, Copyright (c) 2007 Jerome Quelin
@@ -756,6 +756,7 @@ sub info_to_hash {
             eval {
                 my $extra = $self->get_info_from_file( $info->{filename} );
                 while ( my ( $k, $v ) = each %{$extra} ) {
+					next if (($k eq "secs") && (exists $info->{secs}) && ($info->{secs} > 30));
                     $info->{$k} = $v;
                 }
             };    # eval'd to protect from a bad Music::Tag plugin causing trouble.
@@ -781,7 +782,7 @@ sub info_to_hash {
         my $ret = {};
         $ret->{artist}   = $info->artist;
         $ret->{title}    = $info->title;
-        $ret->{secs}     = $info->secs || 300;
+        $ret->{secs}     = int($info->secs) || 300;
         $ret->{album}    = $info->album || "";
         $ret->{tracknum} = $info->track || "";
         $ret->{mbid}     = $info->mb_trackid || "";

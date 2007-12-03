@@ -4,6 +4,7 @@ use Music::MPDScrobble;
 use Getopt::Long;
 use Proc::Daemon;
 use Pod::Usage;
+our $VERSION = .01;
 our %cloptions = ( pidfile => "/var/run/musicmpdscrobble.pid", );
 our $clopts = [
                 [  "daemonize" => \$cloptions{daemonize},
